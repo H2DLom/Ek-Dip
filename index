@@ -1,7 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Página Principal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 20px;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
 <body>
-<h1>Hello World</h1>
-<p>I'm hosted with GitHub Pages.</p>
+    <h1>Bienvenido a mi sitio web</h1>
+    <p>Haz clic en el siguiente enlace para ir a la página DynamicTie:</p>
+    <p><a href="Ruth/DynamicTie.html">Ir a DynamicTie</a></p>
 </body>
 </html>
