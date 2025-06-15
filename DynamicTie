@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Dynamic Tie Calculator</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Hide number input arrows */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        .input-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-4xl"> <!-- Increased max-width for two columns -->
+        <h1 class="text-3xl font-extrabold text-center text-gray-900 mb-6">
+            Dynamic Tie Calculator
+        </h1>
+        <p class="text-center text-gray-600 mb-8">
+            Configure your Diplomacy game parameters to calculate the Supply Centers (SCs) needed for a draw.
+        </p>
+
+        <div class="space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8"> <!-- Two-column layout for medium screens and up -->
+                <!-- Section: Map Details -->
+                <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Map Details</h2>
+                    <div class="space-y-6">
+                        <!-- Input for total supply centers on the map -->
+                        <div>
+                            <label for="totalSupplyCenters" class="block text-lg font-medium text-gray-700 mb-2">
+                                Total Supply Centers on Map
+                            </label>
+                            <input
+                                type="number"
+                                id="totalSupplyCenters"
+                                min="1"
+                                value="109"
+                                class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-lg"
+                                placeholder="E.g.: 109"
+                            >
+                        </div>
+
+                        <!-- Input for minimum SCs for solo win -->
+                        <div>
+                            <label for="minCSForSoloWin" class="block text-lg font-medium text-gray-700 mb-2">
+                                Minimum SCs for Solo Win
+                            </label>
+                            <input
+                                type="number"
+                                id="minCSForSoloWin"
+                                min="1"
+                                value="55"
+                                class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-lg"
+                                placeholder="E.g.: 55"
+                            >
+                            <p class="mt-2 text-sm text-gray-500">
+                                Number of SCs needed for a player to win alone (usually half of total SCs + 1).
+                            </p>
+                        </div>
+
+                        <!-- Input for total players in the game (N_original_game) -->
+                        <div>
+                            <label for="totalPlayersInGame" class="block text-lg font-medium text-gray-700 mb-2">
+                                Total Players in the Game
+                            </label>
+                            <input
+                                type="number"
+                                id="totalPlayersInGame"
+                                min="2"
+                                value="15"
+                                class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-lg"
+                                placeholder="E.g.: 15"
+                            >
+                            <p class="mt-2 text-sm text-gray-500">
+                                The total number of nations/players that started the game.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Dynamic Tie Configuration -->
+                <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Dynamic Tie Configuration</h2>
+
+                    <div class="space-y-6">
+                        <!-- Input for number of active players (N_active) -->
+                        <div>
+                            <label for="activePlayers" class="block text-lg font-medium text-gray-700 mb-2">
+                                Number of Remaining Active Players
+                            </label>
+                            <input
+                                type="number"
+                                id="activePlayers"
+                                min="1"
+                                value="13"
+                                class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-lg"
+                                placeholder="E.g.: 13"
+                            >
+                            <p id="activePlayersHelpText" class="mt-2 text-sm text-gray-500">
+                                The number of nations/players not yet eliminated from the game.
+                            </p>
+                        </div>
+
+                        <!-- Input for number of players in tie alliance (N_alliance) -->
+                        <div>
+                            <label for="alliancePlayers" class="block text-lg font-medium text-gray-700 mb-2">
+                                Number of Players in Draw Alliance
+                            </label>
+                            <input
+                                type="number"
+                                id="alliancePlayers"
+                                min="1"
+                                value="7"
+                                class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-lg"
+                                placeholder="E.g.: 7"
+                            >
+                            <p class="mt-2 text-sm text-gray-500">
+                                If '1' is entered, the minimum SCs for a solo win will be displayed.
+                            </p>
+                        </div>
+
+                        <!-- Input for 'k' value (adjustment factor) -->
+                        <div>
+                            <label for="kValue" class="block text-lg font-medium text-gray-700 mb-2">
+                                'k' Adjustment Factor (Impact Intensity by Active Players)
+                            </label>
+                            <input
+                                type="number"
+                                id="kValue"
+                                min="0"
+                                step="0.01"
+                                value="0.2"
+                                class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-lg"
+                                placeholder="E.g.: 0.2"
+                            >
+                            <p id="kValueHelpText" class="mt-2 text-sm text-gray-500">
+                                Controls the strength of the active players' effect. A higher value means a greater impact.
+                            </p>
+                        </div>
+
+                        <!-- Checkbox to incentivize puppet states -->
+                        <div class="flex items-center">
+                            <input
+                                id="incentivizePuppets"
+                                type="checkbox"
+                                class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                            >
+                            <label for="incentivizePuppets" class="ml-3 block text-lg font-medium text-gray-700">
+                                Incentivize Puppet States (draw becomes easier if fewer active players)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calculate SCs button (full width below columns) -->
+            <button
+                id="calculateBtn"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-lg"
+            >
+                Calculate Needed SCs
+            </button>
+
+            <!-- Result area (full width below columns) -->
+            <div id="resultArea" class="mt-8 bg-indigo-50 border border-indigo-200 rounded-xl p-6 text-center shadow-inner hidden">
+                <p class="text-xl font-semibold text-indigo-800 mb-2">
+                    Needed Supply Centers:
+                </p>
+                <p id="resultCS" class="text-4xl font-extrabold text-indigo-900">0</p>
+            </div>
+
+            <!-- Message area (errors/alerts) -->
+            <div id="messageArea" class="mt-4 text-red-700 font-medium text-center hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        // Function to calculate Supply Centers (SCs)
+        function calculateCS() {
+            const totalSupplyCentersInput = document.getElementById('totalSupplyCenters');
+            const minCSForSoloWinInput = document.getElementById('minCSForSoloWin');
+            const totalPlayersInGameInput = document.getElementById('totalPlayersInGame');
+            const activePlayersInput = document.getElementById('activePlayers');
+            const alliancePlayersInput = document.getElementById('alliancePlayers');
+            const kValueInput = document.getElementById('kValue');
+            const incentivizePuppetsCheckbox = document.getElementById('incentivizePuppets');
+            const resultArea = document.getElementById('resultArea');
+            const resultCS = document.getElementById('resultCS');
+            const messageArea = document.getElementById('messageArea');
+
+            // Hide previous messages and results
+            messageArea.classList.add('hidden');
+            resultArea.classList.add('hidden');
+            resultCS.textContent = '0';
+
+            // Get values and convert them to numbers
+            const totalSupplyCenters = parseFloat(totalSupplyCentersInput.value);
+            const minCSForSoloWin = parseFloat(minCSForSoloWinInput.value);
+            const totalPlayersInGame = parseFloat(totalPlayersInGameInput.value); // N_original_game
+            const numActivePlayers = parseFloat(activePlayersInput.value); // N_active
+            const numAlliancePlayers = parseFloat(alliancePlayersInput.value); // N_alliance
+            const k = parseFloat(kValueInput.value);
+            const incentivizePuppets = incentivizePuppetsCheckbox.checked;
+
+            // Input validations
+            if (isNaN(totalSupplyCenters) || isNaN(minCSForSoloWin) || isNaN(totalPlayersInGame) || isNaN(numActivePlayers) || isNaN(numAlliancePlayers) || isNaN(k) ||
+                totalSupplyCenters <= 0 || minCSForSoloWin <= 0 || totalPlayersInGame <= 0 || numActivePlayers <= 0 || numAlliancePlayers <= 0) {
+                showMessage('Please enter valid numeric values in all fields.');
+                return;
+            }
+
+            if (minCSForSoloWin >= totalSupplyCenters) {
+                showMessage('The "Minimum SCs for Solo Win" must be less than the "Total Supply Centers".');
+                return;
+            }
+            
+            if (numAlliancePlayers > totalPlayersInGame) {
+                showMessage('The number of players in the alliance cannot exceed the total number of players in the game.');
+                return;
+            }
+
+            if (numActivePlayers > totalPlayersInGame) {
+                showMessage('The number of remaining active players cannot exceed the total number of players in the game.');
+                return;
+            }
+
+            if (numAlliancePlayers > numActivePlayers) {
+                showMessage('The number of players in the alliance cannot exceed the number of remaining active players.');
+                return;
+            }
+
+            if (totalPlayersInGame === 1 && numAlliancePlayers > 1) {
+                showMessage('There cannot be an alliance of more than one player if the total players in the game is 1.');
+                return;
+            }
+
+            let finalUmbral;
+
+            // Special case: 1 player in alliance (solo win condition)
+            if (numAlliancePlayers === 1) {
+                finalUmbral = minCSForSoloWin;
+            } else {
+                // Part 1: Base Umbral based on alliance size, total game players, total SCs, and solo win SCs
+                const baseGrowthFactor = totalSupplyCenters / minCSForSoloWin;
+
+                // Divisor for the base exponent: ensures scaling across the full range of player counts
+                const divisorForBaseExponent = (totalPlayersInGame - 1) > 0 ? (totalPlayersInGame - 1) : 1;
+
+                // Exponent for the base formula. It scales (numAlliancePlayers - 1) across the range (totalPlayersInGame - 1)
+                const baseExponent = (numAlliancePlayers - 1) / divisorForBaseExponent;
+                
+                let umbralBase = minCSForSoloWin * Math.pow(baseGrowthFactor, baseExponent);
+
+                // Part 2: Adjustment factor based on active players and 'k'
+                let factorActivePlayers = 1;
+                // Only apply factor if active players are less than total players in game
+                if (numActivePlayers < totalPlayersInGame) { 
+                    if (incentivizePuppets) {
+                        // Incentivize puppets: tie gets EASIER (SC requirement DECREASES) as active players decrease
+                        // Factor will be (N_active / N_original)^k --> value < 1 if N_active < N_original
+                        factorActivePlayers = Math.pow((numActivePlayers / totalPlayersInGame), k);
+                    } else {
+                        // Disincentivize puppets (original behavior): tie gets HARDER (SC requirement INCREASES) as active players decrease
+                        // Factor will be (N_original / N_active)^k --> value > 1 if N_active < N_original
+                        factorActivePlayers = Math.pow((totalPlayersInGame / numActivePlayers), k);
+                    }
+                }
+                finalUmbral = umbralBase * factorActivePlayers;
+            }
+
+            // Ensure the umbral does not exceed the total supply centers
+            if (finalUmbral > totalSupplyCenters) {
+                finalUmbral = totalSupplyCenters;
+            }
+
+            // Ensure the umbral is at least the minCSForSoloWin (for alliances > 1, it should naturally be higher)
+            if (finalUmbral < minCSForSoloWin && numAlliancePlayers > 1) {
+                 finalUmbral = minCSForSoloWin;
+            }
+
+            // Display the result, rounding up to the nearest integer
+            resultCS.textContent = Math.ceil(finalUmbral);
+            resultArea.classList.remove('hidden'); // Show the results area
+        }
+
+        // Function to display messages (errors/info)
+        function showMessage(message) {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.textContent = message;
+            messageArea.classList.remove('hidden');
+        }
+
+        // --- UI Toggle Logic ---
+        const incentivizePuppetsCheckbox = document.getElementById('incentivizePuppets');
+        const activePlayersInput = document.getElementById('activePlayers');
+        const kValueInput = document.getElementById('kValue');
+        const activePlayersHelpText = document.getElementById('activePlayersHelpText');
+        const kValueHelpText = document.getElementById('kValueHelpText');
+
+
+        function togglePuppetIncentiveFields() {
+            const isDisabled = incentivizePuppetsCheckbox.checked;
+            
+            activePlayersInput.disabled = isDisabled;
+            kValueInput.disabled = isDisabled;
+
+            if (isDisabled) {
+                activePlayersInput.classList.add('input-disabled');
+                kValueInput.classList.add('input-disabled');
+                activePlayersHelpText.textContent = 'In this mode, this value is used internally by the formula to incentivize the draw, but does not need to be dynamically adjusted by the user.';
+                kValueHelpText.textContent = 'In this mode, this value is used internally by the formula to define the intensity of the incentive.';
+
+            } else {
+                activePlayersInput.classList.remove('input-disabled');
+                kValueInput.classList.remove('input-disabled');
+                activePlayersHelpText.textContent = 'The number of nations/players not yet eliminated from the game.';
+                kValueHelpText.textContent = 'Controls the strength of the active players\' effect. A higher value means a greater impact.';
+            }
+            // Recalculate whenever the checkbox state changes
+            calculateCS();
+        }
+
+        // Event listeners
+        document.getElementById('calculateBtn').addEventListener('click', calculateCS);
+        incentivizePuppetsCheckbox.addEventListener('change', togglePuppetIncentiveFields);
+
+        // Calculate on page load with default values and initialize toggle state
+        window.onload = () => {
+            togglePuppetIncentiveFields(); // Set initial state based on default checkbox value
+            calculateCS();
+        };
+
+    </script>
+</body>
+</html>
