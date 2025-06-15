@@ -80,7 +80,7 @@
                 Dynamic Tie Calculator
             </h1>
             <p class="text-center text-gray-600 mb-8" data-lang-key="calcDescription">
-                Configure your Diplomacy game parameters to calculate the Supply Centers (SCs) needed for a draw.
+                Esta herramienta te permite calcular dinámicamente el número de Centros de Suministro (CS) necesarios para un empate en cualquier variante de Diplomacy. Ajusta la dificultad del empate a medida que más jugadores se unen a la alianza de empate, requiriendo más CS de lo que normalmente se necesitaría para una victoria en solitario. Esto ayuda a equilibrar alianzas desiguales, asegura que el control de un porcentaje significativo del mapa sea necesario para declarar un empate y evita que las partidas terminen prematuramente. Además, puedes configurar el comportamiento de la regla ante la presencia de "estados títere" (jugadores casi eliminados).
             </p>
 
             <div class="space-y-8">
@@ -251,7 +251,7 @@
                     homeParagraph2: "Mi objetivo es aportar a la complejidad estratégica del juego, explorando variantes y creando herramientas que ayuden a los jugadores a profundizar en sus partidas. ¡Espero que encuentres algo útil para tu próxima campaña!",
                     homeParagraph3: "Puedes empezar explorando la \"Calculadora de Empate Dinámico\" en la pestaña correspondiente.",
                     calcTitle: "Calculadora de Empate Dinámico",
-                    calcDescription: "Configura los parámetros de tu partida de Diplomacy para calcular los Centros de Suministro (CS) necesarios para un empate.",
+                    calcDescription: "Esta herramienta te permite calcular dinámicamente el número de Centros de Suministro (CS) necesarios para un empate en cualquier variante de Diplomacy. Ajusta la dificultad del empate a medida que más jugadores se unen a la alianza de empate, requiriendo más CS de lo que normalmente se necesitaría para una victoria en solitario. Esto ayuda a equilibrar alianzas desiguales, asegura que el control de un porcentaje significativo del mapa sea necesario para declarar un empate y evita que las partidas terminen prematuramente. Además, puedes configurar el comportamiento de la regla ante la presencia de \"estados títere\" (jugadores casi eliminados).",
                     mapDetailsTitle: "Detalles del Mapa",
                     totalSupplyCentersLabel: "Total de Centros de Suministro en el Mapa",
                     minSCsSoloWinLabel: "Mínimo CS para Victoria en Solitario",
@@ -286,7 +286,7 @@
                     homeParagraph2: "My goal is to contribute to the game's strategic complexity, exploring variants and creating tools that help players delve deeper into their games. I hope you find something useful for your next campaign!",
                     homeParagraph3: "You can start by exploring the \"Dynamic Tie Calculator\" on the corresponding tab.",
                     calcTitle: "Dynamic Tie Calculator",
-                    calcDescription: "Configure your Diplomacy game parameters to calculate the Supply Centers (SCs) needed for a draw.",
+                    calcDescription: "This tool dynamically calculates the number of Supply Centers (SCs) needed for a draw in any Diplomacy variant. It adjusts the draw difficulty as more players join the draw alliance, requiring more SCs than normally needed for a solo victory. This helps balance unequal alliances, ensures control of a significant map percentage is needed to declare a draw, and prevents games from ending prematurely. Additionally, you can configure the rule's behavior regarding the presence of 'puppet states' (nearly eliminated players).",
                     mapDetailsTitle: "Map Details",
                     totalSupplyCentersLabel: "Total Supply Centers on Map",
                     minSCsSoloWinLabel: "Minimum SCs for Solo Win",
@@ -318,17 +318,21 @@
 
             // Function to update UI strings based on selected language
             function updateUIStrings() {
+                // Update title tag
+                document.title = translations[currentLanguage].title;
+
                 const elements = document.querySelectorAll('[data-lang-key]');
                 elements.forEach(element => {
                     const key = element.getAttribute('data-lang-key');
+                    // Check if it's a label for an input that also has a placeholder
+                    const associatedInput = element.htmlFor ? document.getElementById(element.htmlFor) : null;
+
                     if (translations[currentLanguage][key]) {
-                        // Special handling for placeholder if needed (not currently used with data-lang-key for placeholders)
-                        // For labels and button textContent
                         element.textContent = translations[currentLanguage][key];
                     }
                 });
 
-                // Update input placeholders manually if they are not covered by data-lang-key textContent
+                // Update input placeholders manually
                 document.getElementById('totalSupplyCenters').placeholder = currentLanguage === 'es' ? 'Ej: 109' : 'E.g.: 109';
                 document.getElementById('minCSForSoloWin').placeholder = currentLanguage === 'es' ? 'Ej: 55' : 'E.g.: 55';
                 document.getElementById('totalPlayersInGame').placeholder = currentLanguage === 'es' ? 'Ej: 15' : 'E.g.: 15';
@@ -336,7 +340,7 @@
                 document.getElementById('alliancePlayers').placeholder = currentLanguage === 'es' ? 'Ej: 7' : 'E.g.: 7';
                 document.getElementById('kValue').placeholder = currentLanguage === 'es' ? 'Ej: 0.2' : 'E.g.: 0.2';
                 
-                // Also update help texts whose content changes dynamically
+                // Also update help texts whose content changes dynamically (managed by togglePuppetIncentiveFields)
                 togglePuppetIncentiveFields();
             }
 
