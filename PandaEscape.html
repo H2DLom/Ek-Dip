@@ -73,6 +73,11 @@
             z-index: -1;
             opacity: 0.9;
         }
+        #undo-button:disabled {
+            background-color: #57534e; /* stone-600 */
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
     </style>
 </head>
 <body class="text-stone-100 flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden">
@@ -81,7 +86,12 @@
 
     <div class="w-full max-w-2xl text-center mb-4 z-10">
         <h1 class="text-5xl font-bold text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Panda Escape</h1>
-        <p id="level-display" class="text-2xl font-semibold text-lime-300 mt-2" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"></p>
+        <div class="flex justify-center items-center gap-4 mt-2">
+            <p id="level-display" class="text-2xl font-semibold text-lime-300" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"></p>
+            <button id="undo-button" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50 border-2 border-sky-700">
+                Deshacer (3)
+            </button>
+        </div>
     </div>
 
     <div id="game-container" class="relative flex items-center justify-center w-full max-w-md aspect-square z-10">
@@ -139,12 +149,15 @@
         const resetButton = document.getElementById('reset-button');
         const levelDisplay = document.getElementById('level-display');
         const islandContainer = document.getElementById('decorative-islands');
+        const undoButton = document.getElementById('undo-button');
 
         let hexSize;
         let gridState = new Map();
         let pandaPos = { q: 0, r: 0 };
         let gameOver = false;
         let currentLevel = 1;
+        let moveHistory = [];
+        let undosLeft = 3;
 
         // "Pointy-top"
         const axialDirections = [
@@ -231,6 +244,10 @@
             gridState.clear();
             svg.innerHTML = '';
             levelDisplay.textContent = `Nivel: ${currentLevel}`;
+            
+            moveHistory = [];
+            undosLeft = 3;
+            updateUndoButton();
 
             const containerSize = Math.min(gameContainer.clientWidth, gameContainer.clientHeight);
             hexSize = containerSize / ((GRID_SIZE * 2 + 1) * 1.8);
@@ -282,8 +299,17 @@
             if (!state || state.isFence || (pandaPos.q == g.dataset.q && pandaPos.r == g.dataset.r)) {
                 return;
             }
+
+            // Guardar estado antes del movimiento
+            const currentState = {
+                pandaPos: { ...pandaPos },
+                fencePlaced: { q: state.q, r: state.r }
+            };
+            moveHistory.push(currentState);
+            
             state.isFence = true;
             updateDisplay();
+            updateUndoButton(); // Habilitar el botón de deshacer
             setTimeout(pandaTurn, 200);
         }
 
@@ -355,6 +381,28 @@
             pandaSVG.style.left = `${center.x}px`;
             pandaSVG.style.top = `${center.y}px`;
         }
+        
+        function undoMove() {
+            if (gameOver || undosLeft <= 0 || moveHistory.length === 0) return;
+
+            const lastMove = moveHistory.pop();
+            
+            // Revertir la valla
+            const fenceState = gridState.get(`${lastMove.fencePlaced.q},${lastMove.fencePlaced.r}`);
+            if (fenceState) fenceState.isFence = false;
+
+            // Revertir la posición del panda (del movimiento del panda anterior)
+            pandaPos = lastMove.pandaPos;
+            
+            undosLeft--;
+            updateDisplay();
+            updateUndoButton();
+        }
+
+        function updateUndoButton() {
+            undoButton.textContent = `Deshacer (${undosLeft})`;
+            undoButton.disabled = undosLeft <= 0 || moveHistory.length === 0 || gameOver;
+        }
 
         function showModal(title, text, buttonText) {
             modalTitle.textContent = title;
@@ -370,6 +418,8 @@
         }
 
         resetButton.addEventListener('click', initGame);
+        undoButton.addEventListener('click', undoMove);
+
         let resizeTimeout;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
